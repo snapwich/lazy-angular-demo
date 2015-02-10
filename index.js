@@ -1,5 +1,5 @@
 
-var app = angular.module("app", ["ui.router"]);
+var app = require("lazy-angular").module("app", ["ui.router"]);
 
 require("./lib/common/styles.less").use();
 
@@ -7,31 +7,21 @@ app.config(function($locationProvider, $stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise("/");
     $locationProvider.html5Mode(true);
 
-    $stateProvider
-        .state("index", {
+    app
+        .route("index", {
             url: "/",
-            template: "<div>Default stuff</div>"
+            template: "<div>Default Stuff</div>"
         })
-        .state("child1", {
-            url: "/child1",
-            templateProvider: function($q) {
-                app.directive("counter", function($interval) {
-                    return {
-                        restrict: "E",
-                        scope: { start: "@" },
-                        template: "<span>{{ curr }}</span>",
-                        link: function(scope) {
-                            scope.curr = parseInt(scope.start, 10);
-
-                            $interval(function() {
-                                scope.curr += 1;
-                            }, 1000);
-                        }
-                    }
-                });
-                return $q.when('<div> child 1 stuff <counter start="1"></counter></div>');
-            }
-        })
+        .route("child1", {
+            url: "/child1"
+        }, function(loadTemplate) {
+             require([
+                 "./lib/child1/child1.tpl.html",
+                 "./lib/child1/child1.js"
+             ], function(template) {
+                loadTemplate(template);
+             });
+        });
 
 });
 
